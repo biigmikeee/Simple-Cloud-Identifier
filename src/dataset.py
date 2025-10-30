@@ -3,6 +3,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import tranforms
 from PIL import Image
 import os
+from collections import Counter
 
 class CloudDataset(Dataset):
 
@@ -47,7 +48,10 @@ class CloudDataset(Dataset):
 
         return image, label
 
-    
+    #calculating class weights to deal with the underrepresentation of data and imbalances
+    def get_class_weights(self):
+
+        label_counts
 
 
 
