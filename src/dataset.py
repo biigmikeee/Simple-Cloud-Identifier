@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
-from torchvision import tranforms
+from torchvision import transforms
 from PIL import Image
 import os
 from collections import Counter
@@ -48,10 +48,55 @@ class CloudDataset(Dataset):
 
         return image, label
 
-    #calculating class weights to deal with the underrepresentation of data and imbalances
+    #calculating class weights to deal with the underrepresentation of data and imbalances - with this the model learns that error on underrepresented classes are costly. forces more attention on less frequent classes.
     def get_class_weights(self):
 
-        label_counts
+        label_counts = Counter(self.labels)
+        total = len(self.labels)
 
+        num_classes = len(self.classes)
+        weights = []
+
+        for class_idx in range(num_classes):
+            count = label_counts[class_idx]
+            weight = total / (num_classes * count)
+            weights.append(weight)
+
+        return torch.FloatTensor(weights) #for loss function in pytorch we want a floattensor
+    
+    #training transforms for altering training data so model can see different variations -> better generalization. Also increases dataset size
+    # testing -> no transformation just normalization   
+    #for better performance on varying cloud images
+    def get_transforms(train=True):
+
+        if train:
+
+            return transforms.Compose([
+                transforms.RandomHorizontalFlip(p=0.5),
+                transforms.RandomRotation(degrees=15),
+                transforms.ColorJitter(
+                    brightness=0.2,
+                    contrast=0.2,
+                    saturation=0.1
+                ),
+                transforms.RandomAffine(
+                    degrees=0,
+                    translate=(0.1, 0.1),
+                    scale=(0.9, 1.1)
+                ),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225]
+                )
+            ])
+        else:
+            return transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225]
+                )
+            ])
 
 
