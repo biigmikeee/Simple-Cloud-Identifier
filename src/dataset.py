@@ -30,6 +30,23 @@ class CloudDataset(Dataset):
                     self.images.append(img_path)
                     self.labels.append(self.class_to_idx[class_name])
 
+    #dataset length method for PyTorch Dataloader
+    def __len__(self):
+        return len(self.images)
+    
+    #get an image and its label, for training
+    #should return an image and its label
+    def __getitem__(self, idx):
+
+        img_path = self.images[idx]
+        image = Image.open(img_path).convert('RGB') #-> convert to RBG to have consistent color channels for all images
+        label = self.labels[idx]
+
+        if self.transform:
+            image = self.transform(image)
+
+        return image, label
+
     
 
 
